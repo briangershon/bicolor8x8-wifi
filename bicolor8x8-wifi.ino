@@ -81,19 +81,6 @@ void drawCountdown()
   delay(500);
 }
 
-//void rxCallback(uint8_t *buffer, uint8_t len)
-//{
-//  String command = "";
-//  for(int i=0; i<len; i++) {
-//   command = String(command + (char)buffer[i]);
-//  }
-//
-//  draw(command);
-//
-//  debugMsg(buffer, len);
-//  uart.write(buffer, len); // Echo the same data back via BLE
-//}
-
 void setup(void)
 {
   Serial.begin(115200);
@@ -114,14 +101,12 @@ void setup(void)
   matrix.clear();
   matrix.drawPixel(0, 0, LED_RED);
   matrix.writeDisplay();
-//  delay(500);
   
   connect();
 }
 
 void connect() {
-    Serial.println(F("Hello, CC3000!\n")); 
-
+  Serial.println(F("Hello, CC3000!\n"));
   Serial.print("Free RAM: "); Serial.println(getFreeRam(), DEC);
   
   /* Initialise the module */
@@ -180,9 +165,11 @@ void disconnect(void) {
   cc3000.disconnect();
 }
 
-void findNextPicture(void) {
-  Serial.println(F("--- LOOKING FOR NEXT PICTURE ---"));
-  
+void findNextPicture(char *pixelPic) {
+  Serial.print(F("\nConnecting to http://"));
+  Serial.print(WEBSITE);
+  Serial.println(WEBPAGE);
+
    /* Try connecting to the website.
      Note: HTTP/1.1 protocol is used to keep the server from closing the connection before all data is read.
   */
@@ -199,58 +186,68 @@ void findNextPicture(void) {
     return;
   }
 
-  Serial.println(F("-------------------------------------"));
+  Serial.println(F("Reading data"));
   
   /* Read data until either the connection is closed, or the idle timeout is reached. */ 
+
+  String body = "";
+  char lastChars[] = "12345678";
+  boolean bodyIsNext = false;
+
   unsigned long lastRead = millis();
   while (www.connected() && (millis() - lastRead < IDLE_TIMEOUT_MS)) {
     while (www.available()) {
       char c = www.read();
-      Serial.print(c);
+
+      for (int i = 0; i < sizeof(lastChars) - 2; i++) {
+        lastChars[i] = lastChars[i+1];
+      }
+      lastChars[sizeof(lastChars) - 2] = c;
+
+      if (bodyIsNext) {
+        body += c;
+      }
+
+      if (strcmp(lastChars, "\r\n\r\n40\r\n") == 0) {
+        bodyIsNext = true;
+      }
+
+//      Serial.print(c);
+//      Serial.println(c,  DEC);
       lastRead = millis();
     }
   }
   www.close();
-  Serial.println(F("-------------------------------------"));
+  Serial.println(F("Connection closed."));
+  body.toCharArray(pixelPic, 65);
 }
 
 void loop()
 {
-  findNextPicture();
-  
+  char pixelPic[65];
+  findNextPicture(pixelPic);
+  Serial.print("Free RAM: "); Serial.println(getFreeRam(), DEC);
+
   matrix.clear(); 
   
   int row = 0;
   int col = 0;
-  char pic[] = "grgyrygrygygryrgyrgyrgyrgyyrgygyrgyrygyryrygyrygyrygyrgyrgyrgyry";
-  char pic1[] = "0rgy0rgy0rgy0rgy0rgy0rgy0rgy0rgy0rgy0rgy0rgy0rgy0rgy0rgy0rgy0rgy";
-  char pic2[] = "0rgyygr00rgyygr00rgyygr00rgyygr00rgyygr00rgyygr00rgyygr00rgyygr0";
-  char smile[] = "00gggg000g0000g0g0g00g0gg000000gg0g00g0gg00gg00g0g0000g000gggg00";  
 
-  char *current;
-  switch (random(4)) {
-    case 0:
-      current = pic;
-      break;
-    case 1:
-      current = pic1;
-      break;
-    case 2:
-      current = pic2;
-      break;
-    case 3:
-      current = smile;
-      break;
-  }
+//  char smile[] =   "00gggg000g0000g0g0g00g0gg000000gg0g00g0gg00gg00g0g0000g000gggg00";
+//  char neutral[] = "00yyyy000y0000y0y0y00y0yy000000yy0yyyy0yy000000y0y0000y000yyyy00";
+//  char frown[] =   "00rrrr000r0000r0r0r00r0rr000000rr00rr00rr0r00r0r0r0000r000rrrr00";
+//  strcpy(pixelPic, smile);
+
+  Serial.print("Displaying "); Serial.println(pixelPic);
 
   for (int i = 0; i < 64; i++) {
-     if (current[i] == 'r') {
+     if (pixelPic[i] == 'r') {
        matrix.drawPixel(col, row, LED_RED);
      }
-     if (current[i] == 'g') {
+     if (pixelPic[i] == 'g') {
        matrix.drawPixel(col, row, LED_GREEN);
      }
-     if (current[i] == 'y') {
+     if (pixelPic[i] == 'y') {
        matrix.drawPixel(col, row, LED_YELLOW);
      }
      
@@ -261,14 +258,6 @@ void loop()
      }
   }
   matrix.writeDisplay();
-
-  Serial.println(F("Waiting 20 seconds..."));
-  delay(20000);
-
-//  matrix.clear();
-  matrix.drawPixel(0, 0, LED_YELLOW);
-  matrix.writeDisplay();
-//  delay(500);
 }
 
 void listSSIDResults(void)
