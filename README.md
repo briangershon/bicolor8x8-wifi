@@ -2,7 +2,7 @@ bicolor8x8-wifi
 ===============
 
 This Arduino project allows you to set the colors for a Bi-Color 8x8 Matrix
-from a website via Wifi.
+from a website via WiFi.
 
 Author: Brian Gershon
 
@@ -19,7 +19,7 @@ This app continually polls an HTTP page looking for a body that just contains
 
 For example, this shows a smiley face in green:
 
-    `ooggggooogoooogogogoogoggooooooggogoogoggooggoogogoooogoooggggoo`
+    ooggggooogoooogogogoogoggooooooggogoogoggooggoogogoooogoooggggoo
 
 I've created an example web application (Rails 4.2) that allows you to create the
 various emoticons, along with a sample route that picks a random 64-char emoticon.
