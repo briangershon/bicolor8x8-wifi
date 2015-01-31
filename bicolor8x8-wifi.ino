@@ -19,7 +19,7 @@
 Adafruit_CC3000 cc3000 = Adafruit_CC3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ, ADAFRUIT_CC3000_VBAT,
                                          SPI_CLOCK_DIVIDER); // you can change this clock speed
 
-#define IDLE_TIMEOUT_MS  3000      // Amount of time to wait (in milliseconds) with no data 
+#define IDLE_TIMEOUT_MS  3000      // Amount of time to wait (in milliseconds) with no data
                                    // received before closing the connection.  If you know the server
                                    // you're accessing is quick to respond, you can reduce this value.
 
@@ -97,18 +97,18 @@ void setup(void)
   draw("green");
   delay(250);
   draw("clear");
-  
+
   matrix.clear();
   matrix.drawPixel(0, 0, LED_RED);
   matrix.writeDisplay();
-  
+
   connect();
 }
 
 void connect() {
   Serial.println(F("Hello, CC3000!\n"));
   Serial.print("Free RAM: "); Serial.println(getFreeRam(), DEC);
-  
+
   /* Initialise the module */
   Serial.println(F("\nInitializing..."));
   if (!cc3000.begin())
@@ -116,26 +116,26 @@ void connect() {
     Serial.println(F("Couldn't begin()! Check your wiring?"));
     while(1);
   }
-  
+
   // Optional SSID scan
   // listSSIDResults();
-  
+
   Serial.print(F("\nAttempting to connect to ")); Serial.println(WLAN_SSID);
   if (!cc3000.connectToAP(WLAN_SSID, WLAN_PASS, WLAN_SECURITY)) {
     Serial.println(F("Failed!"));
     while(1);
   }
-   
+
   Serial.println(F("Connected!"));
-  
+
   /* Wait for DHCP to complete */
   Serial.println(F("Request DHCP"));
   while (!cc3000.checkDHCP())
   {
     delay(100); // ToDo: Insert a DHCP timeout!
-  }  
+  }
 
-  /* Display the IP address DNS, Gateway, etc. */  
+  /* Display the IP address DNS, Gateway, etc. */
   while (! displayConnectionDetails()) {
     delay(1000);
   }
@@ -151,10 +151,10 @@ void connect() {
   }
 
   cc3000.printIPdotsRev(ip);
-  
+
   // Optional: Do a ping test on the website
   /*
-  Serial.print(F("\n\rPinging ")); cc3000.printIPdotsRev(ip); Serial.print("...");  
+  Serial.print(F("\n\rPinging ")); cc3000.printIPdotsRev(ip); Serial.print("...");
   replies = cc3000.ping(ip, 5);
   Serial.print(replies); Serial.println(F(" replies"));
   */
@@ -182,13 +182,13 @@ void findNextPicture(char *pixelPic) {
     www.fastrprint(F("\r\n"));
     www.println();
   } else {
-    Serial.println(F("Connection failed"));    
+    Serial.println(F("Connection failed"));
     return;
   }
 
   Serial.println(F("Reading data"));
-  
-  /* Read data until either the connection is closed, or the idle timeout is reached. */ 
+
+  /* Read data until either the connection is closed, or the idle timeout is reached. */
 
   String body = "";
   char lastChars[] = "12345678";
@@ -228,14 +228,14 @@ void loop()
   findNextPicture(pixelPic);
   Serial.print("Free RAM: "); Serial.println(getFreeRam(), DEC);
 
-  matrix.clear(); 
-  
+  matrix.clear();
+
   int row = 0;
   int col = 0;
 
-//  char smile[] =   "00gggg000g0000g0g0g00g0gg000000gg0g00g0gg00gg00g0g0000g000gggg00";
-//  char neutral[] = "00yyyy000y0000y0y0y00y0yy000000yy0yyyy0yy000000y0y0000y000yyyy00";
-//  char frown[] =   "00rrrr000r0000r0r0r00r0rr000000rr00rr00rr0r00r0r0r0000r000rrrr00";
+//  char smile[] =   "ooggggooogoooogogogoogoggooooooggogoogoggooggoogogoooogoooggggoo";
+//  char neutral[] = "ooyyyyoooyooooyoyoyooyoyyooooooyyoyyyyoyyooooooyoyooooyoooyyyyoo";
+//  char frown[] =   "oorrrroooroooorororoororroooooorroorroorroroorororoooorooorrrroo";
 //  strcpy(pixelPic, smile);
 
   Serial.print("Displaying "); Serial.println(pixelPic);
@@ -250,7 +250,7 @@ void loop()
      if (pixelPic[i] == 'y') {
        matrix.drawPixel(col, row, LED_YELLOW);
      }
-     
+
      col++;
      if (col > 7) {
        col = 0;
@@ -264,7 +264,7 @@ void listSSIDResults(void)
 {
   uint32_t index;
   uint8_t valid, rssi, sec;
-  char ssidname[33]; 
+  char ssidname[33];
 
   if (!cc3000.startSSIDscan(&index)) {
     Serial.println(F("SSID scan failed!"));
@@ -278,7 +278,7 @@ void listSSIDResults(void)
     index--;
 
     valid = cc3000.getNextSSID(&rssi, &sec, ssidname);
-    
+
     Serial.print(F("SSID Name    : ")); Serial.print(ssidname);
     Serial.println();
     Serial.print(F("RSSI         : "));
@@ -300,7 +300,7 @@ void listSSIDResults(void)
 bool displayConnectionDetails(void)
 {
   uint32_t ipAddress, netmask, gateway, dhcpserv, dnsserv;
-  
+
   if(!cc3000.getIPAddress(&ipAddress, &netmask, &gateway, &dhcpserv, &dnsserv))
   {
     Serial.println(F("Unable to retrieve the IP Address!\r\n"));
